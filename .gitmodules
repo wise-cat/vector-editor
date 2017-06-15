@@ -1,0 +1,6 @@
+[submodule "tools"]
+	path = tools
+	url = https://github.com/wise-cat/js-tools.git
+[submodule "vector"]
+	path = vector
+	url = https://github.com/wise-cat/js-vector.git
