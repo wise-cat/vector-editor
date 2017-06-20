@@ -9,8 +9,7 @@ function Canvas(id, paths) {
 	self.map.push([1,0,0,1,0,0]);
 
 	self.zoom = 0;
-	self.mx = 0;
-	self.my = 0;
+	self.mouse = new tools.Mouse(self.canvas);
 
 	var modhl = {
 		fill: function (col) {
@@ -27,34 +26,26 @@ function Canvas(id, paths) {
 		self.map.apply(self.context);
 		for (var i = 0; i < self.paths.length; ++i) {
 			var mod = undefined;
-			if (self.context.isPointInPath(self.paths[i].path, self.mx, self.my)) {
+			if (self.context.isPointInPath(self.paths[i].path, self.mouse.pos[0], self.mouse.pos[1])) {
 				mod = modhl;
 			}
 			self.paths[i].draw(self.context, mod);
 		}
 	}
 
-	self.canvas.addEventListener("mousemove", function(e) {
-		if(e.offsetX) {
-			self.mx = e.offsetX;
-			self.my = e.offsetY;
-		} else if(e.layerX) {
-			self.mx = e.layerX;
-			self.my = e.layerY;
-		}
+	self.mouse.move = function(pos) {
 		var elempos = document.getElementById("position");
-		var pos = self.map.backward([self.mx,self.my]);
+		var pos = self.map.backward(pos);
 		elempos.innerHTML = "{"+Math.round(pos[0]*100)/100+","+Math.round(pos[1]*100)/100+"}";
 		self.draw();
-	});
+	};
 
-	self.canvas.addEventListener("wheel", function(e) {
-		var dz = (e.deltaY > 0) - (e.deltaY < 0);
+	self.mouse.wheel = function(dz) {
 		self.zoom -= dz;
 		var f = Math.pow(1.6, self.zoom);
 		var df = Math.pow(1.6, -dz);
 		var m = self.map.stack[0];
-		var p = mulimv(self.map.stack[1], [self.mx, self.my]);
+		var p = mulimv(self.map.stack[1], self.mouse.pos);
 		m[0] = f;
 		m[3] = f;
 		m[4] = (m[4] - p[0])*df + p[0];
@@ -63,7 +54,7 @@ function Canvas(id, paths) {
 		var elemzoom = document.getElementById("zoom");
 		elemzoom.innerHTML = Math.round(f*10000)/100+"%";
 		self.draw();
-	});
+	};
 
 	var left = document.getElementById("left");
 	var right = document.getElementById("right");
