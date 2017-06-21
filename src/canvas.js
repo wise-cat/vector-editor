@@ -6,7 +6,7 @@ function Canvas(id, paths) {
 
 	self.map = new Transformation();
 	self.map.push([1,0,0,1,0,0]);
-	self.map.push([1,0,0,1,0,0]);
+	self.map.push([1,0,0,-1,0,0]);
 
 	self.zoom = 0;
 	self.mouse = new tools.Mouse(self.canvas);
@@ -31,17 +31,17 @@ function Canvas(id, paths) {
 			}
 			self.paths[i].draw(self.context, mod);
 		}
+		var bpos = self.map.backward(self.mouse.pos);
+		document.getElementById("position").innerHTML = "{"+Math.round(bpos[0]*100)/100+","+Math.round(bpos[1]*100)/100+"}";
+		document.getElementById("zoom").innerHTML = Math.round(Math.pow(1.6, self.zoom)*10000)/100+"%";
 	}
 
 	self.mouse.move = function(pos) {
-		var elempos = document.getElementById("position");
-		var pos = self.map.backward(pos);
-		elempos.innerHTML = "{"+Math.round(pos[0]*100)/100+","+Math.round(pos[1]*100)/100+"}";
 		self.draw();
 	};
 
 	self.mouse.wheel = function(dz) {
-		self.zoom -= dz;
+		self.zoom = Math.round(self.zoom) - dz;
 		var f = Math.pow(1.6, self.zoom);
 		var df = Math.pow(1.6, -dz);
 		var m = self.map.stack[0];
@@ -51,8 +51,6 @@ function Canvas(id, paths) {
 		m[4] = (m[4] - p[0])*df + p[0];
 		m[5] = (m[5] - p[1])*df + p[1];
 		self.map.update();
-		var elemzoom = document.getElementById("zoom");
-		elemzoom.innerHTML = Math.round(f*10000)/100+"%";
 		self.draw();
 	};
 
@@ -73,4 +71,34 @@ function Canvas(id, paths) {
 		self.draw();
 	}
 	window.addEventListener("resize", self.resize);
+
+	self.fit = function () {
+		if (self.paths.length < 1) { return; }
+		var b = self.paths[0].bounds;
+		var l = b[0], r = b[2], u = b[1], d = b[3];
+		for (var i = 0; i < self.paths.length; ++i) {
+			b = self.paths[i].bounds;
+			if (b[0] < l) { l = b[0]; }
+			if (b[1] > u) { u = b[1]; }
+			if (b[2] > r) { r = b[2]; }
+			if (b[3] < d) { d = b[3]; }
+		}
+		var m = self.map.stack[0];
+		var w = 1.0*self.canvas.width, h = 1.0*self.canvas.height;
+		var f = 1.0;
+		if ((r - l)/(u - d) > w/h) {
+			f = w/(r - l);
+		} else {
+			f = h/(u - d);
+		}
+		m[0] = f;
+		m[3] = f;
+		m[4] = -0.5*(r + l)*f;
+		m[5] = -0.5*(u + d)*f;
+		
+		self.zoom = Math.log(f)/Math.log(1.6);
+		self.map.update();
+		self.draw();
+	};
+	document.getElementById("fit").addEventListener("click", self.fit);
 }

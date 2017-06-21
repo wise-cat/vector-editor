@@ -38,14 +38,21 @@
 			.tools {
 				margin: 4px;
 			}
+			.il {
+				display: inline;
+			}
 		</style>
 	</head>
 	<body background="res/bg.png">
 	<table id=table cellspacing=0 cellpadding=0>
 		<tr><td id=left>
-		<input class="tools" type="button" id="import" value="Import">
-		<input class="tools" type="button" id="export" value="Export">
-		<div class="tools"><div style="display:inline;" id="zoom">100%</div> <div style="display:inline;" id="position">{}</div><div>
+		<input class="tools" type=button id=import value="Import">
+		<input class="tools" type=button id=export value="Export">
+		<div class="tools">
+			<input type=button id=fit value="Fit">
+			<div class="il" id="zoom">100%</div>
+			<div class="il" id="position">{}</div>
+		<div>
 		</td><td id=canvas_container>
 		<canvas id=canvas>HTML5 Canvas isn't supported</canvas>
 		</td><td id=right>
